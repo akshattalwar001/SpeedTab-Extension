@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI-Powered Website Time Tracker</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .container { display: flex; flex-direction: column; gap: 20px; }
+        .url-input { display: flex; gap: 10px; margin-bottom: 20px; }
+        input { flex: 1; padding: 8px; }
+        button { padding: 8px 16px; background: #4CAF50; color: white; border: none; cursor: pointer; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .slow { color: red; }
+        .fast { color: green; }
+        .ai-insights { background: #f8f8f8; padding: 15px; border-radius: 5px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Website Load Time Tracker (AI Backend)</h1>
+
+        <div class="url-input">
+            <input type="text" id="urlInput" placeholder="Enter URL (e.g., example.com)" value="">
+            <button id="trackBtn">Track Load Time</button>
+        </div>
+
+        <div id="results">
+            <h3>Last Result:</h3>
+            <div id="lastResult">No data yet</div>
+        </div>
+
+        <div class="ai-insights" id="aiInsights">
+            <h3>AI Analysis</h3>
+            <div id="aiResults">Track a website to see AI insights</div>
+        </div>
+
+        <h2>History</h2>
+        <table id="historyTable">
+            <thead>
+                <tr>
+                    <th>URL</th>
+                    <th>Load Time (ms)</th>
+                    <th>Status</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <button id="clearBtn">Clear History</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlInput = document.getElementById('urlInput');
+            const trackBtn = document.getElementById('trackBtn');
+            const clearBtn = document.getElementById('clearBtn');
+            const lastResult = document.getElementById('lastResult');
+            const aiResults = document.getElementById('aiResults');
+            const historyTable = document.getElementById('historyTable').querySelector('tbody');
+
+            // Load initial history
+            fetch('/history')
+                .then(r => r.json())
+                .then(updateHistory);
+
+            // Track button handler
+            trackBtn.addEventListener('click', function() {
+                const url = urlInput.value.trim();
+                if (!url) return;
+
+                fetch('/track', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: url })
+                })
+                .then(r => r.json())
+                .then(data => {
+                    lastResult.innerHTML = `
+                        <strong>${data.url}</strong><br>
+                        Load time: <span class="${data.load_time > 3000 ? 'slow' : 'fast'}">${data.load_time.toFixed(0)}ms</span><br>
+                        Status: ${data.status}
+                    `;
+
+                    // Display AI analysis
+                    aiResults.innerHTML = `
+                        ${data.analysis.insights.map(i => `<p>${i}</p>`).join('')}
+                        <p>${data.analysis.comparison}</p>
+                        ${data.analysis.is_anomaly ? '<p class="slow">⚠️ Anomaly detected</p>' : ''}
+                    `;
+
+                    // Refresh history
+                    fetch('/history').then(r => r.json()).then(updateHistory);
+                });
+            });
+
+            // Clear history
+            clearBtn.addEventListener('click', function() {
+                fetch('/clear', { method: 'POST' })
+                    .then(() => {
+                        historyTable.innerHTML = '<tr><td colspan="4">No history</td></tr>';
+                        lastResult.textContent = 'No data yet';
+                        aiResults.textContent = 'Track a website to see AI insights';
+                    });
+            });
+
+            // Update history table
+            function updateHistory(history) {
+                historyTable.innerHTML = '';
+
+                if (history.length === 0) {
+                    historyTable.innerHTML = '<tr><td colspan="4">No history</td></tr>';
+                    return;
+                }
+
+                history.slice().reverse().forEach(entry => {
+                    const row = historyTable.insertRow();
+                    row.insertCell().textContent = entry.url.length > 30 ?
+                        entry.url.substring(0, 30) + '...' : entry.url;
+
+                    const timeCell = row.insertCell();
+                    timeCell.textContent = entry.load_time.toFixed(0);
+                    timeCell.className = entry.load_time > 3000 ? 'slow' :
+                                        (entry.load_time < 1000 ? 'fast' : '');
+
+                    row.insertCell().textContent = entry.status;
+                    row.insertCell().textContent = new Date(entry.timestamp).toLocaleTimeString();
+                });
+            }
+        });
+    </script>
+</body>
+</html>
