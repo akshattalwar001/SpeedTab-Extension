@@ -9,11 +9,10 @@ import numpy as np
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": ["chrome-extension://*"]}})
 
-# Storage with AI capabilities
 class AITimeTracker:
     def __init__(self):
         self.history = []
-        self.site_profiles = {}  # For AI pattern recognition
+        self.site_profiles = {}  # recognise patterns
 
     def track_load_time(self, url):
         """Measure load time from server side"""
@@ -22,13 +21,13 @@ class AITimeTracker:
             response = requests.get(url,
                                     headers={'User-Agent': 'Mozilla/5.0'},
                                     timeout=10)
-            load_time = (time.time() - start_time) * 1000  # Convert to ms
+            load_time = (time.time() - start_time) * 1000  # convert to milisecond
             status = 'success'
         except Exception as e:
             load_time = -1
             status = str(e)
 
-        # AI Analysis
+        # ai analysis
         analysis = self.analyze_performance(url, load_time)
 
         entry = {
@@ -46,7 +45,7 @@ class AITimeTracker:
         """AI-powered performance analysis"""
         domain = url.split('/')[2] if '//' in url else url.split('/')[0]
 
-        # Create performance profile
+        # create profile of performance
         if domain not in self.site_profiles:
             self.site_profiles[domain] = {
                 'load_times': [],
@@ -54,11 +53,11 @@ class AITimeTracker:
                 'stability_score': None
             }
 
-        # Update stats
+        # update statistics
         self.site_profiles[domain]['load_times'].append(current_load_time)
         self.site_profiles[domain]['avg_load_time'] = np.mean(self.site_profiles[domain]['load_times'])
 
-        # Anomaly detection
+        # anomaly detection
         is_anomaly = False
         if len(self.site_profiles[domain]['load_times']) > 5:
             model = IsolationForest(contamination=0.1)
@@ -66,14 +65,14 @@ class AITimeTracker:
             model.fit(data)
             is_anomaly = model.predict([[current_load_time]])[0] == -1
 
-        # Generate insights
+        # generate insights
         insights = []
         if is_anomaly:
             diff = current_load_time - self.site_profiles[domain]['avg_load_time']
             insights.append(
                 f"⚠️ Unusual performance ({(diff / self.site_profiles[domain]['avg_load_time']) * 100:.0f}% {'slower' if diff > 0 else 'faster'} than average)")
 
-        # Improved metric case logic
+        # improved metric case logic
         avg_load_time = self.site_profiles[domain]['avg_load_time']
         if current_load_time < 0:  # Error case
             insights.append("❌ Failed to load website")
@@ -88,7 +87,7 @@ class AITimeTracker:
         else:
             insights.append("🦥 Very slow load time (>3s)")
 
-        # Add context if historical data exists
+        # add context if historical data exists
         if avg_load_time and len(self.site_profiles[domain]['load_times']) > 1:
             if current_load_time < avg_load_time * 0.8:
                 insights.append("✅ Better than site average")
@@ -120,11 +119,11 @@ def track():
     data = request.get_json()
     url = data['url']
 
-    # Validate URL
+    # validate URL
     if not url.startswith(('http://', 'https://')):
         url = 'https://' + url
 
-    # Track from server side
+    # track from server side
     result = tracker.track_load_time(url)
     return jsonify(result)
 
