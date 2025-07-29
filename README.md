@@ -4,7 +4,7 @@ A cutting-edge **Chrome extension** paired with a **Flask backend** to measure w
 
 
 [Download crx file](https://github.com/akshattalwar001/SpeedTab-Extension/blob/main/website-load-time-tracker-extension.crx)
-[Download zip file](https://github.com/akshattalwar001/SpeedTab-Extension/blob/main/website-load-time-tracker-extension.pem)
+[Download zip file](https://github.com/akshattalwar001/SpeedTab-Extension/blob/main/website-load-time-tracker-extension.zip)
 
 ## 📋 Overview
 
