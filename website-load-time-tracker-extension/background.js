@@ -1,5 +1,5 @@
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    const API_URL = 'http://127.0.0.1:5000';
+    const API_URL = 'https://speedtab-extension-production.up.railway.app/';
 
     if (request.action === 'track') {
         fetch(`${API_URL}/track`, {
