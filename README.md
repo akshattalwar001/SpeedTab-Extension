@@ -1,6 +1,6 @@
 # 🌐 Website Load Time Tracker 🚀
 
-A cutting-edge **Chrome extension** paired with a **Flask backend** to measure website load times, deliver **AI-powered performance insights**, and showcase a **webpage preview**—all in one sleek package! Ideal for web developers, business owners, and tech enthusiasts optimizing web performance.
+A cutting-edge **Chrome extension** paired with a **Flask backend** to measure website load times, deliver **AI-powered performance insights**, and showcase a **webpage preview**
 
 
 [Download crx file](https://github.com/akshattalwar001/SpeedTab-Extension/blob/main/website-load-time-tracker-extension.crx)
